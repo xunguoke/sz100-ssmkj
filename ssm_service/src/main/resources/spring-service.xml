@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    
+<!--创建一个事务管理器-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!--指定数据源-->
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+
+
+    <!--事务切面-->
+    <!--通知-->
+    <tx:advice id="advice" transaction-manager="transactionManager">
+        <!--配置拦截切入点-->
+        <tx:attributes>
+            <tx:method name="add*" isolation="DEFAULT" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+            <tx:method name="insert*" isolation="DEFAULT" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+            <tx:method name="save*" isolation="DEFAULT" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+            <tx:method name="delete*" isolation="DEFAULT" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+            <tx:method name="update*" isolation="DEFAULT" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+            <tx:method name="edit*" isolation="DEFAULT" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+            <tx:method name="*" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!--AOP声明式事务配置（配置切入点，通知关联切入点）-->
+    <aop:config>
+        <!--切点指点 【注意】 实现类的包结构必须是在接口包下。接口com.itheima.service，则实现类的包必须在com.itheima.service下 【注意】注意包名拼写是否正确-->
+        <!--任意返回值 com.cn.service 任意包 任意类.任意方法(任意参数))-->
+        <aop:pointcut id="myPoint" expression="execution(* com.cn.service..*.*(..))"/>
+        <!--配置通知-->
+        <aop:advisor advice-ref="advice" pointcut-ref="myPoint"/>
+    </aop:config>
+
+    <!--事务注解支持-->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <!--service包扫描-->
+    <context:component-scan base-package="com.cn.service"/>
+
+    <!--导入spring-mybatis配置-->
+    <import resource="classpath:spring-mybatis.xml"/>
+
+</beans>
